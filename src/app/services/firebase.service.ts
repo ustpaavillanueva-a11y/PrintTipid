@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Auth, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from '@angular/fire/auth';
+import { Auth, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signInWithRedirect, setPersistence, browserLocalPersistence } from '@angular/fire/auth';
 import { Firestore, collection, addDoc, getDocs, query, where, updateDoc, deleteDoc, doc, QuerySnapshot, DocumentData } from '@angular/fire/firestore';
 import { Observable, from, BehaviorSubject } from 'rxjs';
 
@@ -44,7 +44,19 @@ export class FirebaseService {
 
     loginWithGoogle() {
         const provider = new GoogleAuthProvider();
-        return from(signInWithPopup(this.auth, provider));
+        // Try popup first for desktop, but use redirect as fallback
+        // On mobile, this will automatically fall back to redirect
+        try {
+            return from(
+                signInWithPopup(this.auth, provider).catch(() => {
+                    // If popup fails, use redirect method instead
+                    return signInWithRedirect(this.auth, provider);
+                })
+            );
+        } catch (error) {
+            // Fallback to redirect method
+            return from(signInWithRedirect(this.auth, provider));
+        }
     }
 
     logout() {

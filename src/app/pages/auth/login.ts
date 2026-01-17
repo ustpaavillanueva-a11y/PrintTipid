@@ -366,19 +366,27 @@ export class Login {
 
         this.firebaseService.loginWithGoogle().subscribe({
             next: (result) => {
+                this.loadingGoogle = false;
                 this.successMessage = 'Login successful! Redirecting...';
                 setTimeout(() => {
-                    this.loadingGoogle = false;
                     this.router.navigate(['/dashboard']);
-                }, 3000);
+                }, 2000);
             },
             error: (error) => {
                 this.loadingGoogle = false;
-                if (error.code === 'auth/popup-closed-by-user') {
+                console.error('Google login error:', error);
+
+                // Check if it's a redirect flow (no error means it's processing)
+                if (error?.code === 'auth/popup-closed-by-user') {
                     this.errorMessage = 'Login cancelled';
-                } else if (error.code === 'auth/popup-blocked') {
-                    this.errorMessage = 'Please allow popups for this site';
+                } else if (error?.code === 'auth/popup-blocked') {
+                    this.errorMessage = 'Popups are blocked. Please allow popups for this site.';
+                } else if (!error) {
+                    // Silent - redirect in progress
+                    this.successMessage = 'Redirecting to Google...';
+                    return;
                 } else {
+                    console.log('Full error:', error);
                     this.errorMessage = 'Google login failed. Please try again.';
                 }
             }
