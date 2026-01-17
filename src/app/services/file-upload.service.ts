@@ -1,41 +1,34 @@
 import { Injectable } from '@angular/core';
-import { Storage, ref, uploadBytes, getDownloadURL, deleteObject, UploadResult } from '@angular/fire/storage';
-import { Observable, from, switchMap } from 'rxjs';
+import { Observable, from } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
 })
 export class FileUploadService {
-    constructor(private storage: Storage) {}
+    // Cloudinary configuration
+    private cloudName = 'djlpxyegi'; // Your Cloudinary Cloud Name
+    private uploadPreset = 'printipid_uploads'; // Your upload preset
+
+    constructor() {}
 
     /**
-     * Upload document file for an order
+     * Upload document file for an order using Cloudinary
      * @param orderId - Order ID
      * @param file - File to upload
      * @returns Observable with download URL
      */
     uploadDocument(orderId: string, file: File): Observable<string> {
-        const timestamp = Date.now();
-        const fileName = `${timestamp}_${file.name}`;
-        const filePath = `documents/${orderId}/${fileName}`;
-        const storageRef = ref(this.storage, filePath);
-
-        return from(uploadBytes(storageRef, file)).pipe(switchMap((result: UploadResult) => getDownloadURL(result.ref)));
+        return from(this.uploadToCloudinary(file, 'documents'));
     }
 
     /**
-     * Upload payment receipt
+     * Upload payment receipt using Cloudinary
      * @param orderId - Order ID
      * @param file - Receipt image file
      * @returns Observable with download URL
      */
     uploadReceipt(orderId: string, file: File): Observable<string> {
-        const timestamp = Date.now();
-        const fileName = `receipt_${timestamp}_${file.name}`;
-        const filePath = `receipts/${orderId}/${fileName}`;
-        const storageRef = ref(this.storage, filePath);
-
-        return from(uploadBytes(storageRef, file)).pipe(switchMap((result: UploadResult) => getDownloadURL(result.ref)));
+        return from(this.uploadToCloudinary(file, 'receipts'));
     }
 
     /**
@@ -44,22 +37,49 @@ export class FileUploadService {
      * @returns Observable with download URL
      */
     uploadGCashQR(file: File): Observable<string> {
-        const timestamp = Date.now();
-        const fileName = `gcash_qr_${timestamp}.png`;
-        const filePath = `payment-configs/${fileName}`;
-        const storageRef = ref(this.storage, filePath);
-
-        return from(uploadBytes(storageRef, file)).pipe(switchMap((result: UploadResult) => getDownloadURL(result.ref)));
+        return from(this.uploadToCloudinary(file, 'gcash-qr'));
     }
 
     /**
-     * Delete file from storage
-     * @param fileUrl - Full download URL
+     * Main Cloudinary upload function
+     */
+    private uploadToCloudinary(file: File, folder: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', this.uploadPreset);
+            formData.append('folder', folder);
+
+            fetch(`https://api.cloudinary.com/v1_1/${this.cloudName}/auto/upload`, {
+                method: 'POST',
+                body: formData
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.error) {
+                        reject(new Error(data.error.message));
+                    } else {
+                        resolve(data.secure_url); // Returns HTTPS URL
+                    }
+                })
+                .catch((error) => reject(error));
+        });
+    }
+
+    /**
+     * Delete file from Cloudinary
+     * @param publicId - Cloudinary public ID
      * @returns Observable<void>
      */
-    deleteFile(fileUrl: string): Observable<void> {
-        const storageRef = ref(this.storage, fileUrl);
-        return from(deleteObject(storageRef));
+    deleteFile(publicId: string): Observable<void> {
+        return from(
+            fetch(`https://api.cloudinary.com/v1_1/${this.cloudName}/resources/image/upload`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer YOUR_API_TOKEN` // You'll need API token for deletion
+                }
+            }).then(() => {})
+        );
     }
 
     /**

@@ -12,6 +12,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { OrdersService } from '@/app/services/orders.service';
 import { UserService } from '@/app/services/user.service';
+import { FileUploadService } from '@/app/services/file-upload.service';
 import { Order, PaperSize, ColorMode, PaperType, PaymentMethod } from '@/app/models';
 import Swal from 'sweetalert2';
 
@@ -170,6 +171,7 @@ export class NewOrderComponent {
     router = inject(Router);
     ordersService = inject(OrdersService);
     userService = inject(UserService);
+    fileUploadService = inject(FileUploadService);
 
     paymentMethods = [
         { label: 'GCash', value: 'gcash' },
@@ -287,6 +289,17 @@ export class NewOrderComponent {
             return;
         }
 
+        if (this.uploads.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Documents',
+                text: 'Please upload at least one document.',
+                confirmButtonColor: '#621517',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
         this.isSubmitting = true;
 
         const total = this.getEstimatedTotal();
@@ -319,23 +332,34 @@ export class NewOrderComponent {
         const currentUser = this.userService.currentUserDataValue;
         const userId = currentUser?.uid || 'guest';
 
-        const order: Omit<Order, 'orderId' | 'createdAt' | 'updatedAt'> = {
-            userId: userId,
-            serviceId: 'print',
-            status: 'pending',
-            documents: this.uploads.map((f, idx) => ({
-                documentId: `local-${idx}-${Date.now()}`,
-                fileName: f.name,
-                fileSize: f.size,
-                uploadedAt: new Date()
-            })),
-            printOptions,
-            payment,
-            totalAmount: total
-        };
+        // Create temporary order ID for file uploads
+        const tempOrderId = `temp-${userId}-${Date.now()}`;
 
-        this.ordersService.createOrder(order).subscribe({
-            next: (orderId) => {
+        // Upload all files to Firebase Storage
+        const uploadPromises = this.uploads.map((f) => this.fileUploadService.uploadDocument(tempOrderId, f.file).toPromise());
+
+        Promise.all(uploadPromises)
+            .then((downloadUrls) => {
+                // All files uploaded successfully, now create order with URLs
+                const order: Omit<Order, 'orderId' | 'createdAt' | 'updatedAt'> = {
+                    userId: userId,
+                    serviceId: 'print',
+                    status: 'pending',
+                    documents: this.uploads.map((f, idx) => ({
+                        documentId: tempOrderId,
+                        fileName: f.name,
+                        fileSize: f.size,
+                        uploadedAt: new Date(),
+                        fileUrl: downloadUrls[idx] // Add Firebase download URL
+                    })),
+                    printOptions,
+                    payment,
+                    totalAmount: total
+                };
+
+                return this.ordersService.createOrder(order).toPromise();
+            })
+            .then((orderId) => {
                 this.isSubmitting = false;
                 Swal.fire({
                     icon: 'success',
@@ -346,8 +370,8 @@ export class NewOrderComponent {
                 }).then(() => {
                     this.router.navigate(['/dashboard']);
                 });
-            },
-            error: (err) => {
+            })
+            .catch((err) => {
                 console.error('Order submission failed', err);
                 this.isSubmitting = false;
                 Swal.fire({
@@ -357,8 +381,7 @@ export class NewOrderComponent {
                     confirmButtonColor: '#621517',
                     confirmButtonText: 'OK'
                 });
-            }
-        });
+            });
     }
 
     onCancel() {
