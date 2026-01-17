@@ -1,0 +1,66 @@
+:host {
+    ::ng-deep {
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        h5 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        h6 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        .p-dialog-content {
+            padding: 1.5rem;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .p-2 {
+            padding: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1rem;
+
+            .col-6 {
+                grid-column: span 6;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid .col-6 {
+                grid-column: span 12;
+            }
+        }
+    }
+}

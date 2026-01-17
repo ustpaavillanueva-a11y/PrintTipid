@@ -1,0 +1,95 @@
+<div class="card">
+    <h5>In Progress Orders</h5>
+    <p-table [value]="orders" [tableStyle]="{ 'min-width': '50rem' }">
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="id">Order ID <p-sortIcon field="id"></p-sortIcon></th>
+                <th>Customer</th>
+                <th pSortableColumn="createdAt">Date <p-sortIcon field="createdAt"></p-sortIcon></th>
+                <th pSortableColumn="totalAmount">Total <p-sortIcon field="totalAmount"></p-sortIcon></th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-order>
+            <tr>
+                <td>
+                    <strong>{{ order.id }}</strong>
+                </td>
+                <td>{{ customerNames.get(order.userId) || 'Loading...' }}</td>
+                <td>{{ order.createdAt | date: 'short' }}</td>
+                <td>₱{{ order.totalAmount?.toFixed(2) || '0.00' }}</td>
+                <td>
+                    <p-tag [value]="getStatusLabel(order.status)" [severity]="getStatusBadgeSeverity(order.status)"></p-tag>
+                </td>
+                <td>
+                    <p-button label="View" icon="pi pi-eye" (click)="viewOrder(order)" [text]="true" [rounded]="true"></p-button>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="6">No in progress orders found.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="displayModal" [header]="'Order Details - ' + selectedOrder?.id" [modal]="true" [style]="{ width: '50vw' }" (onHide)="closeModal()">
+    <div *ngIf="selectedOrder">
+        <div class="grid">
+            <div class="col-6">
+                <h6>Order Information</h6>
+                <p><strong>Order ID:</strong> {{ selectedOrder.id }}</p>
+                <p><strong>Customer:</strong> {{ customerNames.get(selectedOrder.userId) || 'Loading...' }}</p>
+                <p><strong>Date:</strong> {{ selectedOrder.createdAt | date: 'short' }}</p>
+                <p><strong>Total Amount:</strong> ₱{{ selectedOrder.totalAmount?.toFixed(2) || '0.00' }}</p>
+            </div>
+
+            <div class="col-6">
+                <h6>Print Options</h6>
+                <div *ngIf="selectedOrder.printOptions">
+                    <p><strong>Type:</strong> {{ selectedOrder.printOptions.type }}</p>
+                    <p><strong>Color:</strong> {{ selectedOrder.printOptions.color }}</p>
+                    <p><strong>Size:</strong> {{ selectedOrder.printOptions.size }}</p>
+                    <p><strong>Copies:</strong> {{ selectedOrder.printOptions.copies }}</p>
+                </div>
+            </div>
+        </div>
+
+        <p-divider></p-divider>
+
+        <h6>Status Management</h6>
+        <div class="grid">
+            <div class="col-6">
+                <label>Order Status</label>
+                <select [(ngModel)]="selectedOrder.status" class="w-full p-2 border rounded">
+                    <option value="pending">Pending</option>
+                    <option value="processing">In Progress</option>
+                    <option value="completed">Ready to Pick Up</option>
+                </select>
+                <p-button label="Save Status" (click)="updateOrderStatus(selectedOrder.status)" [text]="true" class="mt-2"></p-button>
+            </div>
+
+            <div class="col-6">
+                <label>Payment Status</label>
+                <select [(ngModel)]="selectedOrder.payment.status" class="w-full p-2 border rounded">
+                    <option value="pending">Pending</option>
+                    <option value="unpaid">Unpaid</option>
+                    <option value="paid">Paid</option>
+                </select>
+                <p-button label="Save Payment" (click)="updatePaymentStatus(selectedOrder.payment.status)" [text]="true" class="mt-2"></p-button>
+            </div>
+        </div>
+
+        <p-divider></p-divider>
+
+        <h6>Payment Information</h6>
+        <p><strong>Status:</strong> {{ selectedOrder.payment?.status }}</p>
+        <p><strong>Method:</strong> {{ selectedOrder.payment?.method || 'N/A' }}</p>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <p-button label="Close" (click)="closeModal()" [text]="true"></p-button>
+    </ng-template>
+</p-dialog>
