@@ -296,6 +296,13 @@ export class Login {
             return;
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(this.email)) {
+            this.errorMessage = 'Please enter a valid email address';
+            return;
+        }
+
         this.loading = true;
         this.errorMessage = '';
         this.successMessage = '';
@@ -327,7 +334,8 @@ export class Login {
                 },
                 error: (error) => {
                     this.loading = false;
-                    this.errorMessage = this.getErrorMessage(error.code);
+                    console.error('Registration error:', error);
+                    this.errorMessage = this.getErrorMessage(error.code || error.message || 'Registration failed');
                 }
             });
         } else {
@@ -342,8 +350,10 @@ export class Login {
                 },
                 error: (error) => {
                     this.loading = false;
-                    console.error('Login failed', error);
-                    this.errorMessage = this.getErrorMessage(error.code || error.message || '');
+                    console.error('Login failed:', error);
+                    this.errorMessage = this.getErrorMessage(error.code || error.message || 'Login failed');
+                    // Log the full error for debugging
+                    console.log('Full error object:', JSON.stringify(error, null, 2));
                 }
             });
         }
