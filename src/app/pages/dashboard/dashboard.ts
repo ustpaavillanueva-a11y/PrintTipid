@@ -13,9 +13,6 @@ import { ButtonModule } from 'primeng/button';
     imports: [CommonModule, CustomerOverviewComponent, AdminOverviewComponent, ButtonModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <div style="padding: 1rem;">
-            <p-button label="🔍 Debug: View All Orders in Console" (click)="debugLogAllOrders()" severity="info" text></p-button>
-        </div>
         <ng-container *ngIf="isAdmin">
             <app-admin-overview />
         </ng-container>
@@ -49,30 +46,5 @@ export class Dashboard implements OnInit {
                 })
             )
             .subscribe();
-    }
-
-    debugLogAllOrders() {
-        this.ordersService.getAllOrders().subscribe({
-            next: (orders) => {
-                console.log('=== ALL ORDERS ===');
-                console.table(orders);
-                orders.forEach((order, idx) => {
-                    console.log(`\n📋 Order ${idx + 1}: ${order.orderId}`);
-                    console.log('  Status:', order.status);
-                    console.log('  Documents:', order.documents);
-                    if (order.documents && order.documents.length > 0) {
-                        order.documents.forEach((doc, docIdx) => {
-                            console.log(`    File ${docIdx + 1}:`, {
-                                fileName: doc.fileName,
-                                fileSize: doc.fileSize,
-                                hasFileData: !!doc.fileData,
-                                uploadedAt: doc.uploadedAt
-                            });
-                        });
-                    }
-                });
-            },
-            error: (err) => console.error('Error loading orders:', err)
-        });
     }
 }
