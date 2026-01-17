@@ -19,10 +19,11 @@ export const appConfig: ApplicationConfig = {
         provideZonelessChangeDetection(),
         provideAnimations(),
         providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
-        provideServiceWorker('ngsw-worker.js', {
-            enabled: true,
-            registrationStrategy: 'registerWhenStable:30000'
-        }),
+        // Disabled service worker for now - causing 401 errors
+        // provideServiceWorker('ngsw-worker.js', {
+        //     enabled: !isDevMode(),
+        //     registrationStrategy: 'registerWhenStable:30000'
+        // }),
         // Firebase Providers
         provideFirebaseApp(() => initializeApp(firebaseConfig)),
         provideAuth(() => getAuth()),

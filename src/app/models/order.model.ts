@@ -29,7 +29,7 @@ export interface OrderDocument {
     documentId: string;
     fileName: string;
     fileSize: number;
-    fileUrl?: string;
+    fileData?: string; // Base64 encoded file data
     uploadedAt: Date;
 }
 

@@ -20,6 +20,9 @@ export class OrdersService {
             updatedAt: Timestamp.now()
         };
 
+        console.log('[OrdersService] Creating order with data:', orderData);
+        console.log('[OrdersService] Documents to save:', orderData.documents);
+
         return from(addDoc(ordersRef, orderData)).pipe(map((docRef) => docRef.id));
     }
 

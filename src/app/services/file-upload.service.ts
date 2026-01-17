@@ -5,81 +5,61 @@ import { Observable, from } from 'rxjs';
     providedIn: 'root'
 })
 export class FileUploadService {
-    // Cloudinary configuration
-    private cloudName = 'djlpxyegi'; // Your Cloudinary Cloud Name
-    private uploadPreset = 'printipid_uploads'; // Your upload preset
-
     constructor() {}
 
     /**
-     * Upload document file for an order using Cloudinary
+     * Convert file to Base64 string
      * @param orderId - Order ID
-     * @param file - File to upload
-     * @returns Observable with download URL
+     * @param file - File to convert
+     * @returns Observable with Base64 string
      */
     uploadDocument(orderId: string, file: File): Observable<string> {
-        return from(this.uploadToCloudinary(file, 'documents'));
+        return from(this.fileToBase64(file));
     }
 
     /**
-     * Upload payment receipt using Cloudinary
+     * Convert receipt to Base64
      * @param orderId - Order ID
-     * @param file - Receipt image file
-     * @returns Observable with download URL
+     * @param file - Receipt file
+     * @returns Observable with Base64 string
      */
     uploadReceipt(orderId: string, file: File): Observable<string> {
-        return from(this.uploadToCloudinary(file, 'receipts'));
+        return from(this.fileToBase64(file));
     }
 
     /**
-     * Upload GCash QR code (admin only)
-     * @param file - QR code image
-     * @returns Observable with download URL
+     * Convert GCash QR code to Base64
+     * @param file - QR code file
+     * @returns Observable with Base64 string
      */
     uploadGCashQR(file: File): Observable<string> {
-        return from(this.uploadToCloudinary(file, 'gcash-qr'));
+        return from(this.fileToBase64(file));
     }
 
     /**
-     * Main Cloudinary upload function
+     * Convert file to Base64 string (data URL format)
      */
-    private uploadToCloudinary(file: File, folder: string): Promise<string> {
+    private fileToBase64(file: File): Promise<string> {
         return new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', this.uploadPreset);
-            formData.append('folder', folder);
+            const reader = new FileReader();
 
-            fetch(`https://api.cloudinary.com/v1_1/${this.cloudName}/auto/upload`, {
-                method: 'POST',
-                body: formData
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.error) {
-                        reject(new Error(data.error.message));
-                    } else {
-                        resolve(data.secure_url); // Returns HTTPS URL
-                    }
-                })
-                .catch((error) => reject(error));
+            reader.onload = () => {
+                const result = reader.result as string;
+                console.log('[FileUploadService] File converted to Base64:', {
+                    fileName: file.name,
+                    fileSize: file.size,
+                    base64Length: result.length
+                });
+                resolve(result); // Returns data:application/pdf;base64,...
+            };
+
+            reader.onerror = (error) => {
+                console.error('[FileUploadService] Error converting file to Base64:', error);
+                reject(error);
+            };
+
+            reader.readAsDataURL(file);
         });
-    }
-
-    /**
-     * Delete file from Cloudinary
-     * @param publicId - Cloudinary public ID
-     * @returns Observable<void>
-     */
-    deleteFile(publicId: string): Observable<void> {
-        return from(
-            fetch(`https://api.cloudinary.com/v1_1/${this.cloudName}/resources/image/upload`, {
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer YOUR_API_TOKEN` // You'll need API token for deletion
-                }
-            }).then(() => {})
-        );
     }
 
     /**
@@ -93,27 +73,22 @@ export class FileUploadService {
     }
 
     /**
-     * Validate file size
+     * Validate file size (Base64 encoding increases size by ~33%)
      * @param file - File to validate
      * @param maxSizeMB - Maximum size in MB
      * @returns boolean
      */
     validateFileSize(file: File, maxSizeMB: number): boolean {
         const maxSizeBytes = maxSizeMB * 1024 * 1024;
-        return file.size <= maxSizeBytes;
+        // Base64 increases size by 33%, so we need stricter validation
+        const estimatedBase64Size = (file.size * 4) / 3;
+        return estimatedBase64Size <= maxSizeBytes;
     }
 
     /**
      * Get allowed document types
      */
     getAllowedDocumentTypes(): string[] {
-        return ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/jpg'];
-    }
-
-    /**
-     * Get allowed image types (for receipts/QR)
-     */
-    getAllowedImageTypes(): string[] {
-        return ['image/jpeg', 'image/png', 'image/jpg'];
+        return ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     }
 }

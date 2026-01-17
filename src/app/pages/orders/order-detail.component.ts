@@ -109,7 +109,10 @@ import { Order, OrderStatus, PaymentStatus } from '../../models/order.model';
                                             <p class="text-sm text-gray-600">{{ formatFileSize(doc.fileSize) }} • {{ doc.uploadedAt | date: 'MMM dd, yyyy' }}</p>
                                         </div>
                                     </div>
-                                    <p-button icon="pi pi-download" [text]="true" [rounded]="true" (click)="downloadFile(doc)" pTooltip="Download file" tooltipPosition="left"></p-button>
+                                    <div class="flex gap-2">
+                                        <p-button icon="pi pi-eye" [text]="true" [rounded]="true" (click)="viewFile(doc)" pTooltip="View File" tooltipPosition="left"></p-button>
+                                        <p-button icon="pi pi-download" [text]="true" [rounded]="true" (click)="downloadFile(doc)" pTooltip="Download file" tooltipPosition="left"></p-button>
+                                    </div>
                                 </div>
                             </div>
                         </p-card>
@@ -252,13 +255,15 @@ export class OrderDetailComponent implements OnInit {
     }
 
     downloadFile(doc: any) {
-        // Check if fileUrl exists (Cloudinary upload)
-        if (doc.fileUrl) {
+        console.log('[OrderDetail] downloadFile called with doc:', doc);
+        console.log('[OrderDetail] doc.fileData exists:', !!doc.fileData);
+        // Check if fileData exists (Base64 encoded file)
+        if (doc.fileData) {
+            console.log('[OrderDetail] Downloading Base64 file:', doc.fileName);
             // Create a temporary link and trigger download
             const link = document.createElement('a');
-            link.href = doc.fileUrl;
+            link.href = doc.fileData; // Base64 data URL
             link.download = doc.fileName;
-            link.target = '_blank';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -270,11 +275,37 @@ export class OrderDetailComponent implements OnInit {
                 life: 3000
             });
         } else {
-            // Fallback if fileUrl is not available
+            // Fallback if fileData is not available
+            console.error('[OrderDetail] No fileData found in doc');
             this.messageService.add({
                 severity: 'warn',
                 summary: 'File Not Available',
-                detail: 'The file URL is not available for download',
+                detail: 'The file is not available for download',
+                life: 3000
+            });
+        }
+    }
+
+    viewFile(doc: any) {
+        console.log('[OrderDetail] viewFile called with doc:', doc);
+        console.log('[OrderDetail] doc.fileData exists:', !!doc.fileData);
+        // Check if fileData exists (Base64 encoded file)
+        if (doc.fileData) {
+            console.log('[OrderDetail] Opening Base64 file:', doc.fileName);
+            // Open file in new tab - Base64 data URL works directly
+            window.open(doc.fileData, '_blank');
+
+            this.messageService.add({
+                severity: 'info',
+                summary: 'Opening File',
+                detail: `Opening ${doc.fileName}...`,
+                life: 2000
+            });
+        } else {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'File Not Available',
+                detail: 'The file URL is not available',
                 life: 3000
             });
         }

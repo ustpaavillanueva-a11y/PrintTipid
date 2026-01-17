@@ -339,8 +339,8 @@ export class NewOrderComponent {
         const uploadPromises = this.uploads.map((f) => this.fileUploadService.uploadDocument(tempOrderId, f.file).toPromise());
 
         Promise.all(uploadPromises)
-            .then((downloadUrls) => {
-                // All files uploaded successfully, now create order with URLs
+            .then((fileDataArray) => {
+                // All files converted to Base64 successfully, now create order
                 const order: Omit<Order, 'orderId' | 'createdAt' | 'updatedAt'> = {
                     userId: userId,
                     serviceId: 'print',
@@ -350,13 +350,15 @@ export class NewOrderComponent {
                         fileName: f.name,
                         fileSize: f.size,
                         uploadedAt: new Date(),
-                        fileUrl: downloadUrls[idx] // Add Firebase download URL
+                        fileData: fileDataArray[idx] // Base64 encoded file data
                     })),
                     printOptions,
                     payment,
                     totalAmount: total
                 };
 
+                console.log('[NewOrder] Order to be saved:', order);
+                console.log('[NewOrder] Documents with fileUrl:', order.documents);
                 return this.ordersService.createOrder(order).toPromise();
             })
             .then((orderId) => {

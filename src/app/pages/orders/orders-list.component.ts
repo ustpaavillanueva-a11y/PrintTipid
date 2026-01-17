@@ -35,6 +35,7 @@ import { User } from '@/app/models/user.model';
                             <th pSortableColumn="orderId">Order ID <p-sortIcon field="orderId"></p-sortIcon></th>
                             <th pSortableColumn="createdAt">Date <p-sortIcon field="createdAt"></p-sortIcon></th>
                             <th>Items</th>
+                            <th>Files</th>
                             <th>Total</th>
                             <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
                             <th>Actions</th>
@@ -47,6 +48,10 @@ import { User } from '@/app/models/user.model';
                             <td>
                                 <span class="text-sm"> {{ order.printOptions.pages }} page(s) × {{ order.printOptions.copies }} copies </span>
                             </td>
+                            <td>
+                                <span *ngIf="order.documents && order.documents.length > 0" class="text-sm font-semibold text-blue-600"> {{ order.documents.length }} file(s) </span>
+                                <span *ngIf="!order.documents || order.documents.length === 0" class="text-sm text-gray-400"> - </span>
+                            </td>
                             <td class="font-semibold">₱{{ order.totalAmount | number: '1.2-2' }}</td>
                             <td>
                                 <p-tag [value]="displayStatus(order.status)" [severity]="getStatusSeverity(order.status)"></p-tag>
@@ -58,7 +63,7 @@ import { User } from '@/app/models/user.model';
                     </ng-template>
                     <ng-template pTemplate="emptymessage">
                         <tr>
-                            <td colspan="6" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <p class="text-muted-color">No orders found. <a routerLink="/pages/orders/new" class="text-primary font-semibold">Create one now!</a></p>
                             </td>
                         </tr>
@@ -169,6 +174,10 @@ import { User } from '@/app/models/user.model';
                                     <p class="text-xs text-gray-600">{{ formatFileSize(doc.fileSize) }} • {{ doc.uploadedAt | date: 'MMM dd, yyyy' }}</p>
                                 </div>
                             </div>
+                            <div class="flex gap-2">
+                                <p-button icon="pi pi-eye" [text]="true" [rounded]="true" (click)="viewFile(doc)" pTooltip="View File" tooltipPosition="left"></p-button>
+                                <p-button icon="pi pi-download" [text]="true" [rounded]="true" (click)="downloadFile(doc)" pTooltip="Download" tooltipPosition="left"></p-button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -212,6 +221,15 @@ export class OrdersListComponent implements OnInit {
                         } else {
                             console.log('[OrdersList] Customer orders:', filtered);
                         }
+                        // Log documents with fileData
+                        filtered.forEach((order, idx) => {
+                            console.log(`[OrdersList] Order ${idx} documents:`, order.documents);
+                            if (order.documents) {
+                                order.documents.forEach((doc, docIdx) => {
+                                    console.log(`  Doc ${docIdx}: fileName=${doc.fileName}, hasFileData=${!!doc.fileData}`);
+                                });
+                            }
+                        });
                         this.orders = filtered;
                         this.filterOrders();
                         this.cdr.markForCheck();
@@ -253,6 +271,39 @@ export class OrdersListComponent implements OnInit {
         const sizes = ['B', 'KB', 'MB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    viewFile(doc: any) {
+        console.log('[OrdersList] viewFile called with doc:', doc);
+        console.log('[OrdersList] doc.fileData exists:', !!doc.fileData);
+        // Check if fileData exists (Base64 encoded file)
+        if (doc.fileData) {
+            console.log('[OrdersList] Opening Base64 file:', doc.fileName);
+            // Open file in new tab - Base64 data URL works directly
+            window.open(doc.fileData, '_blank');
+        } else {
+            console.error('[OrdersList] No fileData found in doc. Available keys:', Object.keys(doc));
+            alert('File data not available');
+        }
+    }
+
+    downloadFile(doc: any) {
+        console.log('[OrdersList] downloadFile called with doc:', doc);
+        console.log('[OrdersList] doc.fileData exists:', !!doc.fileData);
+        // Check if fileData exists (Base64 encoded file)
+        if (doc.fileData) {
+            console.log('[OrdersList] Downloading Base64 file:', doc.fileName);
+            // Create a temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = doc.fileData; // Base64 data URL
+            link.download = doc.fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            console.error('[OrdersList] No fileData found in doc');
+            alert('File data not available');
+        }
     }
 
     getPaymentStatusSeverity(status: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
