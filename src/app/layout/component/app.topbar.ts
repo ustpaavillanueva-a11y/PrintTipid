@@ -164,15 +164,11 @@ export class AppTopbar {
 
         // Console log current user data
         this.currentUser$.subscribe((user) => {
-            console.log('Current User:', user);
-            console.log('User Role:', user?.role);
-            console.log('User Email:', user?.email);
-            console.log('User Name:', user?.name);
+          
         });
 
         // Console log Firebase Auth user
         this.firebaseService.getCurrentUser().subscribe((authUser) => {
-            console.log('Firebase Auth User:', authUser);
         });
     }
 

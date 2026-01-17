@@ -225,7 +225,7 @@ export class AdminPaymentVerificationComponent {
             })
             .subscribe({
                 next: () => {
-                    console.log(`[PaymentVerification] Order ${this.selectedOrder!.orderId} payment verified`);
+                  
                     this.showVerifyModal = false;
                     this.confirmPaymentVerification = false;
                     this.loadOrders();
@@ -248,7 +248,6 @@ export class AdminPaymentVerificationComponent {
             })
             .subscribe({
                 next: () => {
-                    console.log(`[PaymentVerification] Order ${this.selectedOrder!.orderId} payment rejected. Reason: ${this.rejectionReason || 'No reason provided'}`);
                     this.showRejectModal = false;
                     this.confirmPaymentRejection = false;
                     this.rejectionReason = '';

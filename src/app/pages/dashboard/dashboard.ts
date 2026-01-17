@@ -38,9 +38,7 @@ export class Dashboard implements OnInit {
             .pipe(
                 filter((user) => !!user),
                 switchMap((user) => {
-                    console.log('[Dashboard] Current user:', user);
                     this.isAdmin = user?.role === 'admin';
-                    console.log('[Dashboard] Is admin:', this.isAdmin);
                     this.cdr.markForCheck();
                     return [];
                 })

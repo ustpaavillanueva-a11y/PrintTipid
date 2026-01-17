@@ -21,7 +21,6 @@ export class UserService {
             .getCurrentUser()
             .pipe(
                 switchMap((authUser) => {
-                    console.log('[UserService] Auth state changed', authUser?.uid);
                     if (!authUser) {
                         return of(null);
                     }
@@ -29,12 +28,10 @@ export class UserService {
                     // Try to fetch existing user doc
                     return this.getUserData(authUser.uid).pipe(
                         switchMap((userData) => {
-                            console.log('[UserService] Firestore doc fetch result', userData);
                             if (userData) {
                                 return of(userData);
                             }
                             // Auto-create user doc if missing (default role customer)
-                            console.log('[UserService] No user doc, creating default for uid', authUser.uid);
                             return this.createUser(authUser, 'customer').pipe(
                                 switchMap(() => this.getUserData(authUser.uid)),
                                 catchError((err) => {
@@ -98,7 +95,6 @@ export class UserService {
                         createdAt: data['createdAt']?.toDate ? data['createdAt'].toDate() : new Date(data['createdAt']),
                         updatedAt: data['updatedAt']?.toDate ? data['updatedAt'].toDate() : new Date(data['updatedAt'])
                     };
-                    console.log('[UserService] Loaded user doc', mapped);
                     return mapped;
                 }
                 return null;

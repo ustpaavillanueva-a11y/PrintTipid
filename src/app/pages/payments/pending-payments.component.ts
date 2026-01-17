@@ -152,18 +152,15 @@ export class PendingPaymentsComponent implements OnInit {
             .getCurrentUserData()
             .pipe(
                 filter((user) => {
-                    console.log('[PendingPayments] User data:', user);
                     return !!user?.uid;
                 }),
                 switchMap((user) => {
-                    console.log('[PendingPayments] Fetching orders for user:', user?.uid);
                     // Fetch orders to get payment data
                     return this.ordersService.getUserOrders(user!.uid);
                 })
             )
             .subscribe({
                 next: (orders) => {
-                    console.log('[PendingPayments] All orders:', orders);
                     this.orders = orders;
                     // Extract payments from orders where payment status is 'pending'
                     const pendingPayments = orders
@@ -174,7 +171,6 @@ export class PendingPaymentsComponent implements OnInit {
                             orderId: o.orderId,
                             referenceNo: o.orderId
                         }));
-                    console.log('[PendingPayments] Pending payments:', pendingPayments);
                     this.pendingPayments = pendingPayments as Payment[];
                     this.cdr.markForCheck();
                 },

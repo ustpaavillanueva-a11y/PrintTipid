@@ -160,13 +160,11 @@ export class CustomerOverviewComponent implements OnInit {
             .pipe(
                 filter((user) => !!user?.uid),
                 switchMap((user) => {
-                    console.log('[CustomerOverview] Fetching orders for user:', user?.uid);
                     return this.ordersService.getUserOrders(user!.uid);
                 })
             )
             .subscribe({
                 next: (orders: Order[]) => {
-                    console.log('[CustomerOverview] All orders:', orders);
                     this.calculateStats(orders);
                     this.recentOrders = orders.slice(0, 5);
                     this.cdr.markForCheck();
@@ -225,14 +223,7 @@ export class CustomerOverviewComponent implements OnInit {
         this.activeOrders = activeCount;
         this.processingOrders = processingCount;
 
-        console.log('[CustomerOverview] Stats calculated:', {
-            totalOrders: this.totalOrders,
-            completedOrders: this.completedOrders,
-            pendingPayments: this.pendingPayments,
-            pendingAmount: this.pendingAmount,
-            totalSpent: this.totalSpent,
-            activeOrders: this.activeOrders
-        });
+      
     }
 
     getStatusSeverity(status: string): 'info' | 'success' | 'warn' | 'danger' {

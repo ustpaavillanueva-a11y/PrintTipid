@@ -353,7 +353,7 @@ export class Login {
                     console.error('Login failed:', error);
                     this.errorMessage = this.getErrorMessage(error.code || error.message || 'Login failed');
                     // Log the full error for debugging
-                    console.log('Full error object:', JSON.stringify(error, null, 2));
+                 
                 }
             });
         }
@@ -386,7 +386,6 @@ export class Login {
                     this.successMessage = 'Redirecting to Google...';
                     return;
                 } else {
-                    console.log('Full error:', error);
                     this.errorMessage = 'Google login failed. Please try again.';
                 }
             }

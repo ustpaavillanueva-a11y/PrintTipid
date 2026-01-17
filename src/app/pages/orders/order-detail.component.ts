@@ -255,8 +255,6 @@ export class OrderDetailComponent implements OnInit {
     }
 
     downloadFile(doc: any) {
-        console.log('[OrderDetail] downloadFile called with doc:', doc);
-        console.log('[OrderDetail] doc.fileData exists:', !!doc.fileData);
 
         if (!doc.fileData) {
             console.error('[OrderDetail] No fileData found in doc');
@@ -270,7 +268,6 @@ export class OrderDetailComponent implements OnInit {
         }
 
         try {
-            console.log('[OrderDetail] Downloading Base64 file:', doc.fileName);
 
             // Convert Base64 data URL to Blob
             const byteString = atob(doc.fileData.split(',')[1]);
@@ -314,8 +311,6 @@ export class OrderDetailComponent implements OnInit {
     }
 
     viewFile(doc: any) {
-        console.log('[OrderDetail] viewFile called with doc:', doc);
-        console.log('[OrderDetail] doc.fileData exists:', !!doc.fileData);
 
         if (!doc.fileData) {
             console.error('[OrderDetail] No fileData found in doc');
@@ -329,7 +324,6 @@ export class OrderDetailComponent implements OnInit {
         }
 
         try {
-            console.log('[OrderDetail] Opening file:', doc.fileName);
 
             // Convert Base64 data URL to Blob
             const byteString = atob(doc.fileData.split(',')[1]);
@@ -344,7 +338,6 @@ export class OrderDetailComponent implements OnInit {
             const blob = new Blob([ab], { type: mimeType });
             const blobUrl = URL.createObjectURL(blob);
 
-            console.log('[OrderDetail] Created blob URL, opening in new tab');
             window.open(blobUrl, '_blank');
 
             // Clean up after a delay

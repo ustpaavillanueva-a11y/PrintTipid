@@ -147,18 +147,15 @@ export class PwaInstallPromptComponent implements OnInit {
 
         // Log for debugging
         this.showPrompt$.subscribe((show) => {
-            console.log('[PWA Component] showPrompt:', show);
         });
     }
 
     onInstall(): void {
-        console.log('[PWA Component] onInstall clicked');
         this.pwaInstallService.promptInstall();
         localStorage.setItem('pwa-prompt-dismissals', '0');
     }
 
     onClose(): void {
-        console.log('[PWA Component] onClose clicked');
         // Reshow prompt on next page load - user must install eventually
         // Only close temporarily but don't hide permanently
     }

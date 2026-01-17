@@ -20,8 +20,6 @@ export class OrdersService {
             updatedAt: Timestamp.now()
         };
 
-        console.log('[OrdersService] Creating order with data:', orderData);
-        console.log('[OrdersService] Documents to save:', orderData.documents);
 
         return from(addDoc(ordersRef, orderData)).pipe(map((docRef) => docRef.id));
     }
@@ -48,7 +46,6 @@ export class OrdersService {
     getAllOrdersWithLog(): void {
         this.getAllOrders().subscribe({
             next: (orders) => {
-                console.log('[OrdersService] All orders:', orders);
             },
             error: (err) => {
                 console.error('[OrdersService] Failed to load all orders', err);
@@ -63,7 +60,6 @@ export class OrdersService {
 
         return from(getDocs(q)).pipe(
             map((snapshot) => {
-                console.log(`[OrdersService] Found ${snapshot.docs.length} orders for user ${userId}`);
                 const orders = snapshot.docs.map(
                     (doc) =>
                         ({
@@ -73,7 +69,6 @@ export class OrdersService {
                             updatedAt: doc.data()['updatedAt']?.toDate()
                         }) as Order
                 );
-                console.log('[OrdersService] Mapped orders:', orders);
                 return orders;
             })
         );

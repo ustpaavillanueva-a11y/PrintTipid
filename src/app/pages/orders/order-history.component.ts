@@ -79,20 +79,16 @@ export class OrderHistoryComponent implements OnInit {
             .getCurrentUserData()
             .pipe(
                 filter((user) => {
-                    console.log('[OrderHistory] User data:', user);
                     return !!user?.uid;
                 }),
                 switchMap((user) => {
-                    console.log('[OrderHistory] Fetching orders for user:', user?.uid);
                     return this.ordersService.getUserOrders(user!.uid);
                 })
             )
             .subscribe({
                 next: (orders) => {
-                    console.log('[OrderHistory] All orders:', orders);
                     // Filter only completed orders
                     const filtered = orders.filter((order) => order.status === 'completed');
-                    console.log('[OrderHistory] Completed orders:', filtered);
                     this.orders = filtered;
                     this.cdr.markForCheck();
                 },

@@ -45,11 +45,7 @@ export class FileUploadService {
 
             reader.onload = () => {
                 const result = reader.result as string;
-                console.log('[FileUploadService] File converted to Base64:', {
-                    fileName: file.name,
-                    fileSize: file.size,
-                    base64Length: result.length
-                });
+              
                 resolve(result); // Returns data:application/pdf;base64,...
             };
 

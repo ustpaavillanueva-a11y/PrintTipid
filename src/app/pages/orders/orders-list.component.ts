@@ -217,16 +217,12 @@ export class OrdersListComponent implements OnInit {
                     next: (orders: Order[]) => {
                         const filtered = user.role === 'admin' ? orders : orders.filter((o: Order) => o.userId === user.uid);
                         if (user.role === 'admin') {
-                            console.log('[OrdersList] Admin orders:', filtered);
                         } else {
-                            console.log('[OrdersList] Customer orders:', filtered);
                         }
                         // Log documents with fileData
                         filtered.forEach((order, idx) => {
-                            console.log(`[OrdersList] Order ${idx} documents:`, order.documents);
                             if (order.documents) {
                                 order.documents.forEach((doc, docIdx) => {
-                                    console.log(`  Doc ${docIdx}: fileName=${doc.fileName}, hasFileData=${!!doc.fileData}`);
                                 });
                             }
                         });
@@ -274,8 +270,6 @@ export class OrdersListComponent implements OnInit {
     }
 
     viewFile(doc: any) {
-        console.log('[OrdersList] viewFile called with doc:', doc);
-        console.log('[OrdersList] doc.fileData exists:', !!doc.fileData);
 
         if (!doc.fileData) {
             console.error('[OrdersList] No fileData found in doc. Available keys:', Object.keys(doc));
@@ -284,7 +278,6 @@ export class OrdersListComponent implements OnInit {
         }
 
         try {
-            console.log('[OrdersList] Opening file:', doc.fileName);
 
             // Convert Base64 data URL to Blob
             const byteString = atob(doc.fileData.split(',')[1]);
@@ -299,7 +292,6 @@ export class OrdersListComponent implements OnInit {
             const blob = new Blob([ab], { type: mimeType });
             const blobUrl = URL.createObjectURL(blob);
 
-            console.log('[OrdersList] Created blob URL, opening in new tab');
             window.open(blobUrl, '_blank');
 
             // Clean up after a delay to allow the window to open
@@ -313,8 +305,6 @@ export class OrdersListComponent implements OnInit {
     }
 
     downloadFile(doc: any) {
-        console.log('[OrdersList] downloadFile called with doc:', doc);
-        console.log('[OrdersList] doc.fileData exists:', !!doc.fileData);
 
         if (!doc.fileData) {
             console.error('[OrdersList] No fileData found in doc');
@@ -323,7 +313,6 @@ export class OrdersListComponent implements OnInit {
         }
 
         try {
-            console.log('[OrdersList] Downloading Base64 file:', doc.fileName);
 
             // Convert Base64 data URL to Blob
             const byteString = atob(doc.fileData.split(',')[1]);

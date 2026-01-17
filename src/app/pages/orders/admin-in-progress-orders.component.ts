@@ -267,8 +267,6 @@ export class AdminInProgressOrdersComponent {
     }
 
     viewFile(doc: any) {
-        console.log('[AdminInProgressOrders] viewFile called with doc:', doc);
-        console.log('[AdminInProgressOrders] doc.fileData exists:', !!doc.fileData);
 
         if (!doc.fileData) {
             console.error('[AdminInProgressOrders] No fileData found in doc. Available keys:', Object.keys(doc));
@@ -277,7 +275,6 @@ export class AdminInProgressOrdersComponent {
         }
 
         try {
-            console.log('[AdminInProgressOrders] Opening file:', doc.fileName);
 
             // Convert Base64 data URL to Blob
             const byteString = atob(doc.fileData.split(',')[1]);
@@ -292,7 +289,6 @@ export class AdminInProgressOrdersComponent {
             const blob = new Blob([ab], { type: mimeType });
             const blobUrl = URL.createObjectURL(blob);
 
-            console.log('[AdminInProgressOrders] Created blob URL, opening in new tab');
             window.open(blobUrl, '_blank');
 
             setTimeout(() => {
@@ -305,8 +301,7 @@ export class AdminInProgressOrdersComponent {
     }
 
     downloadFile(doc: any) {
-        console.log('[AdminInProgressOrders] downloadFile called with doc:', doc);
-        console.log('[AdminInProgressOrders] doc.fileData exists:', !!doc.fileData);
+     
 
         if (!doc.fileData) {
             console.error('[AdminInProgressOrders] No fileData found in doc');
@@ -315,7 +310,6 @@ export class AdminInProgressOrdersComponent {
         }
 
         try {
-            console.log('[AdminInProgressOrders] Downloading Base64 file:', doc.fileName);
 
             // Convert Base64 data URL to Blob
             const byteString = atob(doc.fileData.split(',')[1]);

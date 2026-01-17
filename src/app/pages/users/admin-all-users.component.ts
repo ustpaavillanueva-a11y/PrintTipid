@@ -273,7 +273,6 @@ export class AdminAllUsersComponent {
             })
         ).subscribe({
             next: () => {
-                console.log('User role updated successfully');
                 this.showEditModal = false;
                 this.loadUsers();
                 this.cdr.markForCheck();

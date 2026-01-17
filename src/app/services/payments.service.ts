@@ -52,7 +52,6 @@ export class PaymentsService {
 
         return from(getDocs(q)).pipe(
             map((snapshot) => {
-                console.log(`[PaymentsService] Found ${snapshot.docs.length} payments for user ${userId}`);
                 const payments = snapshot.docs.map((doc) => {
                     const docData = doc.data();
                     return {
@@ -63,7 +62,6 @@ export class PaymentsService {
                         updatedAt: docData['updatedAt']?.toDate()
                     } as unknown as Payment;
                 });
-                console.log('[PaymentsService] Mapped payments:', payments);
                 return payments;
             })
         );

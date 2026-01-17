@@ -399,8 +399,7 @@ export class AdminOrdersComponent {
     }
 
     viewFile(doc: any) {
-        console.log('[AdminOrders] viewFile called with doc:', doc);
-        console.log('[AdminOrders] doc.fileData exists:', !!doc.fileData);
+   
 
         if (!doc.fileData) {
             console.error('[AdminOrders] No fileData found in doc. Available keys:', Object.keys(doc));
@@ -409,7 +408,6 @@ export class AdminOrdersComponent {
         }
 
         try {
-            console.log('[AdminOrders] Opening file:', doc.fileName);
 
             // Convert Base64 data URL to Blob
             const byteString = atob(doc.fileData.split(',')[1]);
@@ -424,7 +422,6 @@ export class AdminOrdersComponent {
             const blob = new Blob([ab], { type: mimeType });
             const blobUrl = URL.createObjectURL(blob);
 
-            console.log('[AdminOrders] Created blob URL, opening in new tab');
             window.open(blobUrl, '_blank');
 
             setTimeout(() => {
@@ -437,8 +434,6 @@ export class AdminOrdersComponent {
     }
 
     downloadFile(doc: any) {
-        console.log('[AdminOrders] downloadFile called with doc:', doc);
-        console.log('[AdminOrders] doc.fileData exists:', !!doc.fileData);
 
         if (!doc.fileData) {
             console.error('[AdminOrders] No fileData found in doc');
@@ -447,7 +442,6 @@ export class AdminOrdersComponent {
         }
 
         try {
-            console.log('[AdminOrders] Downloading Base64 file:', doc.fileName);
 
             // Convert Base64 data URL to Blob
             const byteString = atob(doc.fileData.split(',')[1]);

@@ -357,8 +357,6 @@ export class NewOrderComponent {
                     totalAmount: total
                 };
 
-                console.log('[NewOrder] Order to be saved:', order);
-                console.log('[NewOrder] Documents with fileUrl:', order.documents);
                 return this.ordersService.createOrder(order).toPromise();
             })
             .then((orderId) => {

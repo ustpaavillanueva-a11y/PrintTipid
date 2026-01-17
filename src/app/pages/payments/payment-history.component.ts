@@ -155,18 +155,15 @@ export class PaymentHistoryComponent implements OnInit {
             .getCurrentUserData()
             .pipe(
                 filter((user) => {
-                    console.log('[PaymentHistory] User data:', user);
                     return !!user?.uid;
                 }),
                 switchMap((user) => {
-                    console.log('[PaymentHistory] Fetching orders for user:', user?.uid);
                     // Fetch orders instead of payments to get payment data
                     return this.ordersService.getUserOrders(user!.uid);
                 })
             )
             .subscribe({
                 next: (orders) => {
-                    console.log('[PaymentHistory] All orders:', orders);
                     this.orders = orders;
                     // Extract payments from orders where payment status is 'paid'
                     const paidPayments = orders
@@ -177,7 +174,6 @@ export class PaymentHistoryComponent implements OnInit {
                             orderId: o.orderId,
                             referenceNo: o.orderId
                         }));
-                    console.log('[PaymentHistory] Paid payments:', paidPayments);
                     this.paymentHistory = paidPayments as Payment[];
                     this.cdr.markForCheck();
                 },

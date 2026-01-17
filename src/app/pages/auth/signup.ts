@@ -125,7 +125,6 @@ export class Signup {
         // Register user
         this.firebaseService.register(this.email, this.password).subscribe({
             next: (result) => {
-                console.log('Registration successful:', result);
                 this.loading = false;
                 this.successMessage = 'Account created successfully! Redirecting to dashboard...';
 
@@ -141,7 +140,6 @@ export class Signup {
 
                 this.firebaseService.addDocument('users', userData).subscribe({
                     next: () => {
-                        console.log('User profile created');
                         setTimeout(() => this.router.navigate(['/dashboard']), 2000);
                     },
                     error: (err) => {

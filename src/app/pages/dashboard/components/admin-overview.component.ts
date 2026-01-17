@@ -154,10 +154,8 @@ export class AdminOverviewComponent implements OnInit {
     }
 
     loadDashboardData() {
-        console.log('[AdminOverview] Loading all orders');
         this.ordersService.getAllOrders().subscribe({
             next: (orders: Order[]) => {
-                console.log('[AdminOverview] All orders:', orders);
                 this.calculateStats(orders);
                 this.recentOrders = orders.slice(0, 10);
                 this.cdr.markForCheck();
@@ -218,15 +216,7 @@ export class AdminOverviewComponent implements OnInit {
         this.dailySales = dailySalesAmount;
         this.todayOrderCount = todayOrderCount;
 
-        console.log('[AdminOverview] Stats calculated:', {
-            totalOrders: this.totalOrders,
-            completedOrders: this.completedOrders,
-            pendingPayments: this.pendingPayments,
-            pendingAmount: this.pendingAmount,
-            totalSales: this.totalSales,
-            dailySales: this.dailySales,
-            todayOrderCount: this.todayOrderCount
-        });
+       
     }
 
     getStatusSeverity(status: string): 'info' | 'success' | 'warn' | 'danger' {
