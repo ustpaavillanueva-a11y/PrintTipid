@@ -143,6 +143,27 @@ import { from, map } from 'rxjs';
 
                 <p-divider></p-divider>
 
+                <div *ngIf="selectedOrder.documents && selectedOrder.documents.length > 0">
+                    <h3 class="font-semibold mb-3">Uploaded Documents</h3>
+                    <div class="space-y-2">
+                        <div *ngFor="let doc of selectedOrder.documents" class="flex items-center justify-between bg-gray-50 p-3 rounded">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-file text-lg text-blue-500"></i>
+                                <div>
+                                    <p class="font-semibold text-sm">{{ doc.fileName }}</p>
+                                    <p class="text-xs text-gray-600">{{ formatFileSize(doc.fileSize) }} • {{ doc.uploadedAt | date: 'MMM dd, yyyy' }}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <p-button icon="pi pi-eye" [text]="true" [rounded]="true" (click)="viewFile(doc)" pTooltip="View File" tooltipPosition="left"></p-button>
+                                <p-button icon="pi pi-download" [text]="true" [rounded]="true" (click)="downloadFile(doc)" pTooltip="Download" tooltipPosition="left"></p-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p-divider></p-divider>
+
                 <div>
                     <h3 class="font-semibold mb-2">Payment</h3>
                     <div class="grid grid-cols-2 gap-3">
@@ -549,5 +570,94 @@ export class AdminTodayOrdersComponent {
                 pickupDateTime: toDate(order.printOptions?.pickupDateTime) as Date | undefined
             }
         } as Order;
+    }
+
+    formatFileSize(bytes: number): string {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    viewFile(doc: any) {
+        console.log('[AdminTodayOrders] viewFile called with doc:', doc);
+        console.log('[AdminTodayOrders] doc.fileData exists:', !!doc.fileData);
+
+        if (!doc.fileData) {
+            console.error('[AdminTodayOrders] No fileData found in doc. Available keys:', Object.keys(doc));
+            alert('File data not available');
+            return;
+        }
+
+        try {
+            console.log('[AdminTodayOrders] Opening file:', doc.fileName);
+
+            // Convert Base64 data URL to Blob
+            const byteString = atob(doc.fileData.split(',')[1]);
+            const mimeType = doc.fileData.split(';')[0].split(':')[1];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+
+            const blob = new Blob([ab], { type: mimeType });
+            const blobUrl = URL.createObjectURL(blob);
+
+            console.log('[AdminTodayOrders] Created blob URL, opening in new tab');
+            window.open(blobUrl, '_blank');
+
+            // Clean up after a delay to allow the window to open
+            setTimeout(() => {
+                URL.revokeObjectURL(blobUrl);
+            }, 100);
+        } catch (error) {
+            console.error('[AdminTodayOrders] Error viewing file:', error);
+            alert('Error opening file');
+        }
+    }
+
+    downloadFile(doc: any) {
+        console.log('[AdminTodayOrders] downloadFile called with doc:', doc);
+        console.log('[AdminTodayOrders] doc.fileData exists:', !!doc.fileData);
+
+        if (!doc.fileData) {
+            console.error('[AdminTodayOrders] No fileData found in doc');
+            alert('File data not available');
+            return;
+        }
+
+        try {
+            console.log('[AdminTodayOrders] Downloading Base64 file:', doc.fileName);
+
+            // Convert Base64 data URL to Blob
+            const byteString = atob(doc.fileData.split(',')[1]);
+            const mimeType = doc.fileData.split(';')[0].split(':')[1];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+
+            const blob = new Blob([ab], { type: mimeType });
+            const blobUrl = URL.createObjectURL(blob);
+
+            // Create a temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = doc.fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Clean up
+            URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('[AdminTodayOrders] Error downloading file:', error);
+            alert('Error downloading file');
+        }
     }
 }
