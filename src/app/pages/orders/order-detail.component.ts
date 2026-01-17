@@ -37,7 +37,7 @@ import { Order, OrderStatus, PaymentStatus } from '../../models/order.model';
                     <!-- Order Header -->
                     <p-card class="shadow-lg">
                         <ng-template pTemplate="header">
-                            <div class="bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-4 text-white">
+                            <div class="bg-linear-to-r from-primary-500 to-primary-600 px-6 py-4 text-white">
                                 <h2 class="text-2xl font-bold">{{ order.orderId }}</h2>
                             </div>
                         </ng-template>
