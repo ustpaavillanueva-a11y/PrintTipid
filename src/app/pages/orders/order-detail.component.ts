@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { OrdersService } from '../../services/orders.service';
 import { Order, OrderStatus, PaymentStatus } from '../../models/order.model';
@@ -13,7 +14,7 @@ import { Order, OrderStatus, PaymentStatus } from '../../models/order.model';
 @Component({
     selector: 'app-order-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, ToastModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, ToastModule, TooltipModule],
     providers: [MessageService],
     template: `
         <div class="container mx-auto px-4 py-8">
@@ -108,7 +109,7 @@ import { Order, OrderStatus, PaymentStatus } from '../../models/order.model';
                                             <p class="text-sm text-gray-600">{{ formatFileSize(doc.fileSize) }} • {{ doc.uploadedAt | date: 'MMM dd, yyyy' }}</p>
                                         </div>
                                     </div>
-                                    <p-button icon="pi pi-download" [text]="true" [rounded]="true"></p-button>
+                                    <p-button icon="pi pi-download" [text]="true" [rounded]="true" (click)="downloadFile(doc)" pTooltip="Download file" tooltipPosition="left"></p-button>
                                 </div>
                             </div>
                         </p-card>
@@ -248,6 +249,35 @@ export class OrderDetailComponent implements OnInit {
         const sizes = ['B', 'KB', 'MB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    downloadFile(doc: any) {
+        // Check if fileUrl exists (Cloudinary upload)
+        if (doc.fileUrl) {
+            // Create a temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = doc.fileUrl;
+            link.download = doc.fileName;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Download Started',
+                detail: `${doc.fileName} is downloading...`,
+                life: 3000
+            });
+        } else {
+            // Fallback if fileUrl is not available
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'File Not Available',
+                detail: 'The file URL is not available for download',
+                life: 3000
+            });
+        }
     }
 
     editOrder() {
