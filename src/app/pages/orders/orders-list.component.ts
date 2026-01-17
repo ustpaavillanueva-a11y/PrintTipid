@@ -276,33 +276,81 @@ export class OrdersListComponent implements OnInit {
     viewFile(doc: any) {
         console.log('[OrdersList] viewFile called with doc:', doc);
         console.log('[OrdersList] doc.fileData exists:', !!doc.fileData);
-        // Check if fileData exists (Base64 encoded file)
-        if (doc.fileData) {
-            console.log('[OrdersList] Opening Base64 file:', doc.fileName);
-            // Open file in new tab - Base64 data URL works directly
-            window.open(doc.fileData, '_blank');
-        } else {
+
+        if (!doc.fileData) {
             console.error('[OrdersList] No fileData found in doc. Available keys:', Object.keys(doc));
             alert('File data not available');
+            return;
+        }
+
+        try {
+            console.log('[OrdersList] Opening file:', doc.fileName);
+
+            // Convert Base64 data URL to Blob
+            const byteString = atob(doc.fileData.split(',')[1]);
+            const mimeType = doc.fileData.split(';')[0].split(':')[1];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+
+            const blob = new Blob([ab], { type: mimeType });
+            const blobUrl = URL.createObjectURL(blob);
+
+            console.log('[OrdersList] Created blob URL, opening in new tab');
+            window.open(blobUrl, '_blank');
+
+            // Clean up after a delay to allow the window to open
+            setTimeout(() => {
+                URL.revokeObjectURL(blobUrl);
+            }, 100);
+        } catch (error) {
+            console.error('[OrdersList] Error viewing file:', error);
+            alert('Error opening file');
         }
     }
 
     downloadFile(doc: any) {
         console.log('[OrdersList] downloadFile called with doc:', doc);
         console.log('[OrdersList] doc.fileData exists:', !!doc.fileData);
-        // Check if fileData exists (Base64 encoded file)
-        if (doc.fileData) {
+
+        if (!doc.fileData) {
+            console.error('[OrdersList] No fileData found in doc');
+            alert('File data not available');
+            return;
+        }
+
+        try {
             console.log('[OrdersList] Downloading Base64 file:', doc.fileName);
+
+            // Convert Base64 data URL to Blob
+            const byteString = atob(doc.fileData.split(',')[1]);
+            const mimeType = doc.fileData.split(';')[0].split(':')[1];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+
+            const blob = new Blob([ab], { type: mimeType });
+            const blobUrl = URL.createObjectURL(blob);
+
             // Create a temporary link and trigger download
             const link = document.createElement('a');
-            link.href = doc.fileData; // Base64 data URL
+            link.href = blobUrl;
             link.download = doc.fileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        } else {
-            console.error('[OrdersList] No fileData found in doc');
-            alert('File data not available');
+
+            // Clean up
+            URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('[OrdersList] Error downloading file:', error);
+            alert('Error downloading file');
         }
     }
 

@@ -257,16 +257,44 @@ export class OrderDetailComponent implements OnInit {
     downloadFile(doc: any) {
         console.log('[OrderDetail] downloadFile called with doc:', doc);
         console.log('[OrderDetail] doc.fileData exists:', !!doc.fileData);
-        // Check if fileData exists (Base64 encoded file)
-        if (doc.fileData) {
+
+        if (!doc.fileData) {
+            console.error('[OrderDetail] No fileData found in doc');
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'File Not Available',
+                detail: 'The file is not available for download',
+                life: 3000
+            });
+            return;
+        }
+
+        try {
             console.log('[OrderDetail] Downloading Base64 file:', doc.fileName);
+
+            // Convert Base64 data URL to Blob
+            const byteString = atob(doc.fileData.split(',')[1]);
+            const mimeType = doc.fileData.split(';')[0].split(':')[1];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+
+            const blob = new Blob([ab], { type: mimeType });
+            const blobUrl = URL.createObjectURL(blob);
+
             // Create a temporary link and trigger download
             const link = document.createElement('a');
-            link.href = doc.fileData; // Base64 data URL
+            link.href = blobUrl;
             link.download = doc.fileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
+            // Clean up
+            URL.revokeObjectURL(blobUrl);
 
             this.messageService.add({
                 severity: 'success',
@@ -274,13 +302,12 @@ export class OrderDetailComponent implements OnInit {
                 detail: `${doc.fileName} is downloading...`,
                 life: 3000
             });
-        } else {
-            // Fallback if fileData is not available
-            console.error('[OrderDetail] No fileData found in doc');
+        } catch (error) {
+            console.error('[OrderDetail] Error downloading file:', error);
             this.messageService.add({
-                severity: 'warn',
-                summary: 'File Not Available',
-                detail: 'The file is not available for download',
+                severity: 'error',
+                summary: 'Download Failed',
+                detail: 'Error downloading file',
                 life: 3000
             });
         }
@@ -289,11 +316,41 @@ export class OrderDetailComponent implements OnInit {
     viewFile(doc: any) {
         console.log('[OrderDetail] viewFile called with doc:', doc);
         console.log('[OrderDetail] doc.fileData exists:', !!doc.fileData);
-        // Check if fileData exists (Base64 encoded file)
-        if (doc.fileData) {
-            console.log('[OrderDetail] Opening Base64 file:', doc.fileName);
-            // Open file in new tab - Base64 data URL works directly
-            window.open(doc.fileData, '_blank');
+
+        if (!doc.fileData) {
+            console.error('[OrderDetail] No fileData found in doc');
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'File Not Available',
+                detail: 'The file URL is not available',
+                life: 3000
+            });
+            return;
+        }
+
+        try {
+            console.log('[OrderDetail] Opening file:', doc.fileName);
+
+            // Convert Base64 data URL to Blob
+            const byteString = atob(doc.fileData.split(',')[1]);
+            const mimeType = doc.fileData.split(';')[0].split(':')[1];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+
+            const blob = new Blob([ab], { type: mimeType });
+            const blobUrl = URL.createObjectURL(blob);
+
+            console.log('[OrderDetail] Created blob URL, opening in new tab');
+            window.open(blobUrl, '_blank');
+
+            // Clean up after a delay
+            setTimeout(() => {
+                URL.revokeObjectURL(blobUrl);
+            }, 100);
 
             this.messageService.add({
                 severity: 'info',
@@ -301,11 +358,12 @@ export class OrderDetailComponent implements OnInit {
                 detail: `Opening ${doc.fileName}...`,
                 life: 2000
             });
-        } else {
+        } catch (error) {
+            console.error('[OrderDetail] Error opening file:', error);
             this.messageService.add({
-                severity: 'warn',
-                summary: 'File Not Available',
-                detail: 'The file URL is not available',
+                severity: 'error',
+                summary: 'Error Opening File',
+                detail: 'Unable to open file',
                 life: 3000
             });
         }
